@@ -25,7 +25,7 @@ func fresh_game() -> void:
 
 func run_tests() -> void:
 	fresh_game()
-	check(game.screen_to_cell(Vector2(79, 150)).x == -1, "left boundary rejects outside lawn")
+	check(game.screen_to_cell(Vector2(39, 150)).x == -1, "left boundary rejects outside lawn")
 	check(game.try_plant("peashooter", Vector2i(0, 2)), "planting succeeds")
 	check(game.sun_count == 900, "planting spends exact cost")
 	var money: int = game.sun_count
@@ -76,7 +76,7 @@ func run_tests() -> void:
 	fresh_game()
 	var breach: Dictionary = game.spawn_zombie(0, false, 55)
 	game._update_zombies(0.01)
-	game._update_mowers(0.02)
+	game._update_mowers(0.08) # Travel from the restored left-side parking position.
 	check(game.mowers[0].used and game.zombies.is_empty(), "mower clears first breach")
 	game._update_mowers(2)
 	game.spawn_zombie(0, false, 10)

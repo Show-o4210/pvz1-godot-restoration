@@ -1,7 +1,9 @@
 extends Node2D
 ## Minimal daytime PvZ recreation. Simulation is updated independently of animation.
 
-const GRID_ORIGIN := Vector2(80, 80)
+const GRID_ORIGIN := Vector2(40, 80)
+const BOARD_WIDTH := 900.0
+const HUD_INSET := Vector2(10, 6)
 const CELL_SIZE := Vector2(80, 100)
 const ROWS := 5
 const COLS := 9
@@ -59,13 +61,16 @@ var corpses: Array[Dictionary] = []
 var progress_fill: Sprite2D
 var progress_head: Sprite2D
 var menu_panel: Control
+var hud_layer: CanvasLayer
+var seed_bar: Node2D
 
 
 func _ready() -> void:
 	var background := Sprite2D.new()
+	background.name = "BoardBackground"
 	background.texture = preload("res://assets/images/background1.jpg")
 	background.centered = false
-	background.position.x = -160
+	background.position.x = -220
 	add_child(background)
 	for i in 10:
 		var voice := AudioStreamPlayer.new()
@@ -74,25 +79,30 @@ func _ready() -> void:
 	_build_hud()
 	_build_schedule()
 	for row in ROWS:
-		var art := _new_actor("mower", Vector2(20, GRID_ORIGIN.y + row * CELL_SIZE.y + 23), "normal")
+		var art := _new_actor("mower", Vector2(-20, GRID_ORIGIN.y + row * CELL_SIZE.y + 23), "normal")
 		art.scale = Vector2.ONE * 0.85
 		art.z_index = 100 + row * 10 + 5
-		mowers.append({"row": row, "x": 20.0, "active": false, "used": false, "art": art})
+		mowers.append({"row": row, "x": -20.0, "active": false, "used": false, "art": art})
 	_update_hud()
 
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
+	hud_layer = layer
 	add_child(layer)
+	seed_bar = Node2D.new()
+	seed_bar.name = "SeedBar"
+	seed_bar.position = HUD_INSET
+	layer.add_child(seed_bar)
 	var bank := TextureRect.new()
 	bank.texture = preload("res://assets/images/SeedBank.png")
 	bank.position = Vector2(0, 0)
 	bank.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(bank)
+	seed_bar.add_child(bank)
 	sun_flight_layer = CanvasLayer.new()
 	sun_flight_layer.layer = 2
 	add_child(sun_flight_layer)
-	sun_label = _label(layer, Vector2(8, 58), Vector2(64, 24), 19)
+	sun_label = _label(seed_bar, Vector2(8, 58), Vector2(64, 24), 19)
 	sun_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sun_label.add_theme_color_override("font_color", Color(0.15, 0.1, 0.04))
 	sun_label.add_theme_color_override("font_shadow_color", Color.TRANSPARENT)
@@ -109,7 +119,7 @@ func _build_hud() -> void:
 		button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 		button.tooltip_text = "%s · %d 阳光\n快捷键 %d" % [DEFINITIONS[kind].name, DEFINITIONS[kind].cost, i + 1]
 		button.pressed.connect(select_seed.bind(kind))
-		layer.add_child(button)
+		seed_bar.add_child(button)
 		var icon := Sprite2D.new()
 		icon.name = "Card"
 		icon.centered = false
@@ -141,7 +151,7 @@ func _build_hud() -> void:
 	shovel_button.flat = true
 	shovel_button.tooltip_text = "铲除植物 · 快捷键 4"
 	shovel_button.pressed.connect(select_seed.bind("shovel"))
-	layer.add_child(shovel_button)
+	seed_bar.add_child(shovel_button)
 	var shovel_bank := Sprite2D.new()
 	shovel_bank.centered = false
 	shovel_bank.texture = preload("res://assets/images/ShovelBank.png")
@@ -151,9 +161,9 @@ func _build_hud() -> void:
 	shovel_icon.texture = preload("res://assets/images/Shovel.png")
 	shovel_icon.position = Vector2(0, -4)
 	shovel_button.add_child(shovel_icon)
-	pause_button = _button(layer, "菜单", Vector2(681, -10), Vector2(117, 46))
+	pause_button = _button(layer, "菜单", Vector2(BOARD_WIDTH - 127, 6), Vector2(117, 46))
 	pause_button.pressed.connect(toggle_pause)
-	wave_label = _label(layer, Vector2(410, 577), Vector2(175, 22), 13)
+	wave_label = _label(layer, Vector2(BOARD_WIDTH - 390, 577), Vector2(175, 22), 13)
 	hint_label = _label(layer, Vector2(8, 578), Vector2(390, 22), 13)
 	hint_label.text = "1/2/3 选卡 · 4 铲子 · 空格暂停"
 	var meter := Sprite2D.new()
@@ -162,7 +172,7 @@ func _build_hud() -> void:
 	meter_texture.atlas = preload("res://assets/images/FlagMeter.png")
 	meter_texture.region = Rect2(0, 0, 158, 27)
 	meter.texture = meter_texture
-	meter.position = Vector2(600, 575)
+	meter.position = Vector2(BOARD_WIDTH - 200, 575)
 	layer.add_child(meter)
 	progress_fill = Sprite2D.new()
 	var fill_texture := AtlasTexture.new()
@@ -170,12 +180,12 @@ func _build_hud() -> void:
 	fill_texture.region = Rect2(7, 27, 143, 27)
 	progress_fill.texture = fill_texture
 	progress_fill.centered = false
-	progress_fill.position = Vector2(607, 575)
+	progress_fill.position = Vector2(BOARD_WIDTH - 193, 575)
 	layer.add_child(progress_fill)
 	var meter_caption := Sprite2D.new()
 	meter_caption.centered = false
 	meter_caption.texture = preload("res://assets/images/FlagMeterLevelProgress.png")
-	meter_caption.position = Vector2(638, 589)
+	meter_caption.position = Vector2(BOARD_WIDTH - 162, 589)
 	layer.add_child(meter_caption)
 	progress_head = Sprite2D.new()
 	var head_icon := AtlasTexture.new()
@@ -183,9 +193,9 @@ func _build_hud() -> void:
 	head_icon.region = Rect2(0, 0, 25, 25)
 	progress_head.texture = head_icon
 	progress_head.centered = false
-	progress_head.position = Vector2(738, 572)
+	progress_head.position = Vector2(BOARD_WIDTH - 62, 572)
 	layer.add_child(progress_head)
-	menu_panel = _dialog(layer, Vector2(200, 135), Vector2(400, 300))
+	menu_panel = _dialog(layer, Vector2(BOARD_WIDTH / 2 - 200, 135), Vector2(400, 300))
 	var menu_title := _label(menu_panel, Vector2(50, 35), Vector2(300, 40), 28)
 	menu_title.text = "游戏暂停"
 	menu_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -193,7 +203,7 @@ func _build_hud() -> void:
 	_button(menu_panel, "重新开始", Vector2(70, 169), Vector2(260, 46)).pressed.connect(restart_game)
 	menu_panel.hide()
 	result_panel = PanelContainer.new()
-	result_panel.position = Vector2(180, 165)
+	result_panel.position = Vector2(BOARD_WIDTH / 2 - 220, 165)
 	result_panel.size = Vector2(440, 245)
 	result_panel.add_theme_stylebox_override("panel", _dialog_style())
 	layer.add_child(result_panel)

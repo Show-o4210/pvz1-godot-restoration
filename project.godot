@@ -1,17 +1,17 @@
 config_version=5
 
 [application]
-config/name="PVZ1 · v1 UI 与动画还原"
-config/version="v1"
+config/name="PVZ1 · v1.1 UI 与动画还原"
+config/version="v1.1.0"
 run/main_scene="res://scenes/game.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/use_custom_user_dir=true
 config/custom_user_dir_name="PVZ1-Godot-Minimal"
 
 [display]
-window/size/viewport_width=800
+window/size/viewport_width=900
 window/size/viewport_height=600
-window/size/window_width_override=1000
+window/size/window_width_override=1125
 window/size/window_height_override=750
 window/stretch/mode="canvas_items"
 

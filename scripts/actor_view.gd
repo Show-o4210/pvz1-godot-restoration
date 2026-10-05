@@ -34,6 +34,16 @@ func setup(node: Node2D, actor_kind: String, animation: String, static_icon := f
 	frozen = static_icon or kind == "mower"
 	player = art.get_node("AnimationPlayer")
 	player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	if kind == "sun":
+		# Coin.cpp explicitly loops Sun at 6 fps. The unlabelled rotating
+		# track is not numerically closed, so the converter marks it one-shot.
+		# Duplicate before overriding: never mutate shared imported resources.
+		var sun_clip: Animation = player.get_animation("idle").duplicate()
+		sun_clip.loop_mode = Animation.LOOP_LINEAR
+		var sun_library := AnimationLibrary.new()
+		sun_library.add_animation("idle", sun_clip)
+		player.remove_animation_library("")
+		player.add_animation_library("", sun_library)
 	material = ShaderMaterial.new()
 	material.shader = FLASH_SHADER
 	for child in art.get_children():
@@ -116,6 +126,7 @@ func play(animation: String) -> void:
 	if kind == "peashooter": rate = 18.0 / 12.0
 	elif kind in ["sunflower", "wallnut"]: rate = 12.5 / 12.0
 	elif kind == "mower": rate = 35.0 / 20.0
+	elif kind == "sun": rate = 6.0 / 12.0
 	elif kind == "zombie" and animation == "death": rate = 24.0 / 12.0
 	elif kind == "zombie" and animation == "eat": rate = 36.0 / 12.0
 	elif kind == "zombie" and animation == "walk": rate = motion.playback_rate

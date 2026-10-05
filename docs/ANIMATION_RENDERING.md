@@ -176,3 +176,7 @@ Godot 4.7.2 当前检查入口合计：22 项玩法、24 项表现、18 项联�
 - [pvz2godot](https://github.com/ec50n9/pvz2godot)、[PVZ-Godot-Dream](https://github.com/hsk-dream/PVZ-Godot-Dream)：转换工具及显隐、动画拆分参考。实际采用范围与许可记录见 [VERSIONS.md](VERSIONS.md)。
 
 这里采用原理核对及独立实现，没有并入社区 C++ 源码。
+
+## 草坪裁切与阳光循环补丁
+
+v1.1.0 从实际原版窗口和完整背景发现此前道路被裁掉，并对齐背景与九列格子、卡槽边距和回收目标。阳光原转换动画因旋转首尾数值不同被判断为一次性，播放完冻结；社区 Coin.cpp 实际明确循环并以 6 fps 播放。按类型复制动画后恢复循环，保留原分层变换和统一暂停时钟，不改变共享素材或通用转换器。完整原因、代码路径与跨循环验证见 [LAYOUT_AND_SUN.md](LAYOUT_AND_SUN.md)。

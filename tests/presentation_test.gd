@@ -29,7 +29,7 @@ func run_tests() -> void:
 	check(wheel.rotation == initial_rotation, "idle mower wheels remain still")
 	for button in game.seed_buttons.values():
 		check(button.size == Vector2(50, 70) and button.get_node("Card").texture.get_size() == Vector2(50, 70), "seed card and clickable region use original 50x70 dimensions")
-	check(game.screen_to_cell(Vector2(120, 570)) == Vector2i(0, 4), "bottom lawn row stays fully clickable")
+	check(game.screen_to_cell(Vector2(80, 570)) == Vector2i(0, 4), "bottom lawn row stays fully clickable")
 	game.try_plant("peashooter", Vector2i(1, 2))
 	var shooter: Dictionary = game.plants[0]
 	var view = shooter.art.get_meta("view")
