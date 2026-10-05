@@ -32,6 +32,9 @@ var plants: Array[Dictionary] = []
 var zombies: Array[Dictionary] = []
 var projectiles: Array[Dictionary] = []
 var suns: Array[Dictionary] = []
+var sun_flights: Array[Dictionary] = []
+var sun_flight_layer: CanvasLayer
+var sun_slot_flash := 0.0
 var mowers: Array[Dictionary] = []
 var schedule: Array[Dictionary] = []
 var cooldowns := {"sunflower": 0.0, "peashooter": 0.0, "wallnut": 0.0}
@@ -86,6 +89,9 @@ func _build_hud() -> void:
 	bank.position = Vector2(0, 0)
 	bank.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(bank)
+	sun_flight_layer = CanvasLayer.new()
+	sun_flight_layer.layer = 2
+	add_child(sun_flight_layer)
 	sun_label = _label(layer, Vector2(8, 58), Vector2(64, 24), 19)
 	sun_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sun_label.add_theme_color_override("font_color", Color(0.15, 0.1, 0.04))
@@ -424,12 +430,24 @@ func spawn_sun(pos: Vector2, falling: bool = false) -> Dictionary:
 
 
 func collect_sun(sun: Dictionary) -> void:
-	if not suns.has(sun):
+	if paused or not result.is_empty() or not suns.has(sun):
 		return
-	sun_count += 25
-	_remove_entity(suns, sun)
+	# Credit once at the click, preserving the existing economy. The same actor
+	# becomes a non-clickable UI flight, independent of falling/expiry logic.
+	sun_count += int(sun.get("value", 25))
+	suns.erase(sun)
+	var start: Vector2 = sun.art.global_position
+	sun.art.reparent(sun_flight_layer, false)
+	sun.art.position = start
+	var target := sun_collection_target()
+	sun_flights.append({"art": sun.art, "start": start, "target": target, "age": 0.0,
+		"duration": clampf(start.distance_to(target) / 900.0, 0.35, 0.75), "scale": sun.art.scale})
 	_play_sound("points")
 	_update_hud()
+
+
+func sun_collection_target() -> Vector2:
+	return sun_label.get_global_rect().get_center() - Vector2(0, 36)
 
 
 func fire_pea(row: int, x: float, y: float = NAN) -> Dictionary:
@@ -637,6 +655,18 @@ func _remove_entity(collection: Array[Dictionary], entity: Dictionary) -> void:
 
 
 func _update_presentation(delta: float) -> void:
+	sun_slot_flash = maxf(0, sun_slot_flash - delta)
+	sun_label.modulate = Color(1, 0.65, 0.15) if sun_slot_flash > 0 else Color.WHITE
+	for flight in sun_flights.duplicate():
+		flight.age += delta
+		var t := clampf(float(flight.age) / float(flight.duration), 0, 1)
+		var progress := 1.0 - pow(1.0 - t, 2.0)
+		flight.art.position = flight.start.lerp(flight.target, progress) + Vector2(0, -sin(t * PI) * 12)
+		flight.art.scale = flight.scale.lerp(Vector2.ONE * 0.3, progress)
+		if t >= 1:
+			flight.art.queue_free()
+			sun_flights.erase(flight)
+			sun_slot_flash = 0.18
 	for view in views.duplicate():
 		if not is_instance_valid(view.art) or view.art.is_queued_for_deletion():
 			views.erase(view)
