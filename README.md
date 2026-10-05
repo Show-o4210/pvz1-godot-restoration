@@ -47,6 +47,7 @@ python tools/prepare_assets.py ..\Plants_Vs_Zombies_V1.0.0.1051_CN_V2
 ..\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe --headless --path . --script tests/presentation_test.gd
 ..\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe --headless --path . --script tests/animation_detail_test.gd
 ..\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe --headless --path . --script tests/discrete_state_test.gd
+..\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe --headless --path . --script tests/blink_alignment_test.gd
 ..\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe --path . --script tests/color_render_test.gd
 ..\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe --headless --path . --script tests/level_playthrough.gd
 python tools/pvz2godot/verify.py --all .source_assets/compiled/reanim assets/actors
@@ -54,4 +55,4 @@ python tools/pvz2godot/verify.py --all .source_assets/compiled/reanim assets/act
 
 玩法检查覆盖资源扣除、重复种植、冷却、真实子弹飞行与首个目标命中、分行判定、护甲溢出、阳光点击优先级、暂停、铲除、啃食、推车和胜负。
 
-本机 Godot 4.7.2 的 v1 验证结果（2026-10-05）：22 项玩法、24 项动画/UI、18 项动画联动/位移、36 项离散状态/动作切换、5 项 GPU 颜色检查，共 105 项通过。GPU 零效果颜色对照的 RGBA 误差为零；自动操作按正常经济和冷却规则完成三波关卡，约 188.2 秒击败 15/15 僵尸。v0 的六个动画已通过转换工具语义校验；v1 使用同一转换结果并保留步态元数据，在运行时绑定部件和管理播放，尚未逐像素对照整个原版画面。实际 GPU 截图和连续视频保存在 `build/`，已人工检查；`build/v1-detail.mp4` 已重新生成，包含手型修复后的 8 秒连续画面。
+本机 Godot 4.7.2 的 v1 当前验证结果（2026-10-05）：22 项玩法、24 项动画/UI、18 项动画联动/位移、36 项离散状态/动作切换、33 项眨眼绑定、5 项 GPU 颜色检查，共 138 项通过。GPU 零效果颜色对照的 RGBA 误差为零；自动操作按正常经济和冷却规则完成三波关卡，约 188.2 秒击败 15/15 僵尸。v0 的六个动画已通过转换工具语义校验；v1 使用同一转换结果并保留步态元数据，在运行时绑定部件和管理播放，尚未逐像素对照整个原版画面。实际 GPU 截图和连续视频保存在 `build/`，已人工检查；`build/v1-detail.mp4` 保留手型修复后的 8 秒画面，新近景 `build/sunflower-blink.mp4` 展示三个不同摇摆相位的眨眼绑定。既有 `v1` 标签、发行包和完整归档保留原基线，本次修复提交在 `main`。

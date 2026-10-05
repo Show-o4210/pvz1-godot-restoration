@@ -84,6 +84,22 @@ func setup(node: Node2D, actor_kind: String, animation: String, static_icon := f
 		DiscreteState.apply(head)
 	else:
 		play(animation)
+		if kind == "sunflower" and not static_icon:
+			# The blink segment is an overlay authored in the idle face's bind
+			# coordinates. Carry it with the full face transform, not the stem.
+			attachment = Attachment.new()
+			attachment.name = "FaceAttachment"
+			art.add_child(attachment)
+			attachment.bind(art, "anim_idle", ["anim_blink"])
+			var body_library := AnimationLibrary.new()
+			for clip_name in player.get_animation_list():
+				body_library.add_animation(clip_name, Attachment.retarget(player.get_animation(clip_name), ["anim_blink"], "FaceAttachment"))
+			player.remove_animation_library("")
+			player.add_animation_library("", body_library)
+			var blink_copy := Attachment.retarget(eyelids.get_animation("blink"), ["anim_blink"], "FaceAttachment")
+			eyelids.get_animation_library("").remove_animation("blink")
+			eyelids.get_animation_library("").add_animation("blink", blink_copy)
+			play(animation)
 	if kind == "zombie":
 		apply_damage_parts()
 
